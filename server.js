@@ -1,8 +1,15 @@
 var express = require('express')
   , fs = require('fs')
   , path = require('path')
-  , loader = require('minioc-loader')({ basePath: __dirname})
+  , loader = require('minioc-loader')
+
   ;
+
+loader({ basePath: __dirname, log: {
+  info: function (message) {
+    console.log(message);
+  }
+}});
 
 
 var env = process.env.NODE_ENV || 'development'
@@ -17,7 +24,6 @@ container.register('config').as.singleton.value(config);
 
 loader.loadSync(container, "./app");
 loader.loadSync(container, './config');
-
 
 minioc.fulfill('main', function ($app, $config) {
   var port = process.env.PORT || 3000;

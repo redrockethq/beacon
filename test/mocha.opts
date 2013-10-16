@@ -1,0 +1,5 @@
+--require expect.js
+--colors true
+--recursive
+--ui bdd
+--reporter spec

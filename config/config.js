@@ -1,25 +1,26 @@
 'use strict';
 
 var path = require('path'),
-  rootPath = path.normalize(__dirname + '/..');
+  rootPath = path.normalize(__dirname + '/..')
+  , nconf = require('nconf').file({ file: 'config/settings.json'}).env();
 
 module.exports = {
   development: {
-    db: "mongodb://redrocket:orange5@paulo.mongohq.com:10090/beacon-development",
+    db: nconf.get('mongo'),
     root: rootPath,
     app: {
       name: 'Beacon'
     }
   },
   test: {
-    db: "",
+    db: nconf.get('mongo'),
     root: rootPath,
     app: {
       name: 'Beacon'
     }
   },
   production: {
-    db: "mongodb://redrocket:orange5@paulo.mongohq.com:10090/beacon-development",
+    db: nconf.get('mongo'),
     root: rootPath,
     app: {
       name: 'Beacon'

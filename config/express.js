@@ -2,7 +2,7 @@
 var express = require('express');
 
 
-module.exports = function $init($app, $config) {
+module.exports = function $init($app, $config, next) {
 
   $app.set('showStackError', true);
   $app.use(express.favicon());
@@ -20,4 +20,8 @@ module.exports = function $init($app, $config) {
   $app.use(express.static($config.root + '/public'));
 
   $app.use($app.router);
+
+  if (next) {
+    next();
+  }
 };
