@@ -7,13 +7,16 @@ var Cocktail = require('cocktail')
 Cocktail.mix({
   '@exports': module,
   '@as': 'class',
+
   constructor: function (options) {
     options = options || {};
 
     this.bucket = options.bucket;
     dbc([this.bucket], 'Bucket is required');
 
-    this.storage = options.storage || new MemoryStorage();
+    this.storage = options.storage;
+    dbc([this.storage], "Storage is required");
+
   },
   all: function (callback) {
     this.storage.all(callback);

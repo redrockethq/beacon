@@ -1,64 +1,75 @@
 'use strict';
-var Cocktail = require('cocktail'),
-  _ = require('lodash'),
-  dbc = require('dbc.js'),
-  Storage = require('./storage'),
-  riakjs = require('riak-js')
+var Cocktail = require('cocktail')
+  , _ = require('lodash')
+  , dbc = require('dbc.js')
+  , Storage = require('./storage')
+  , nconf = require('nconf').file({ file: 'config/settings.json'}).env()
+  , riak = require('riak-js')
   ;
-
 
 Cocktail.mix({
   '@exports': module,
   '@extends': Storage,
-
   constructor: function (options) {
     options = options || {};
-    this.callSuper('constructor', options);
+    this.bucket = options.bucket;
+    this.db = riak.getClient({ host: nconf.get('host')});
+
+    dbc([this.bucket], "Bucket is required");
+    dbc([this.db], 'Riak Client is required');
   },
-  all: function (callback) {
+
+  all: function (options, callback) {
     var self = this;
+    options = options || {};
     self.callSuper('all');
-    return callback(null, self._data);
+    self.db.getAll(this.bucket, options, callback);
   },
-  getByKey: function (key, callback) {
+  getByKey: function (key, options, callback) {
     var self = this;
+    options = options || {};
     self.callSuper('getByKey', key);
-    var entity = _.find(self._data, self.keyName);
-    if (entity) {
-      callback(null, entity);
-    } else {
-      callback(new Error('Key not found'), null);
-    }
+    self.db.get(this.bucket, key, options, callback);
   },
-  save: function (entity, callback) {
+  save: function (entity, options, callback) {
     var self = this;
+    options = options || {
+      returnbody: true
+    };
     self.callSuper('save', entity);
-    self._data.push(entity);
-    callback(null, entity);
+    db.save(this.bucket, entity[this.keyName], entity, options, callback);
   },
-  query: function (predicate, callback) {
+  query: function (predicate, options, callback) {
     var self = this;
+    options = options || {};
     self.callSuper('query', predicate);
-    var results = _.where(this._data, predicate);
-    callback(null, results);
+    self.db.query(self.bucket, predicate, options, callback);
   },
-  remove: function (key, callback) {
+  remove: function (key, options, callback) {
     var self = this;
+    options = options || {}
     self.callSuper('remove', key);
-    self.getByKey(key, function (err, entity) {
-      if (!err && entity) {
-        _.reject(self._data, entity);
-        callback(null);
-      } else {
-        callback(new Error('Entity not found or there was an error'));
-      }
-    })
+    db.remove(self.bucket, key, options, callback);
   },
   removeAll: function () {
-    return [];
+    var self = this;
+    db.keys(this.bucket, { keys: 'stream' })
+      .on('keys', function (keys) {
+        if (keys.length > 0) {
+          var key = keys[0];
+          db.remove(this.bucket, key, {}, function (err) {
+            if (err) {
+              throw new Error(err);
+            }
+          });
+        }
+      })
+      .start()
   },
-  exists: function (key, callback) {
-    this.callSuper('exists', key);
-    return callback(null, _.some(this._data, key));
+  exists: function (key, options, callback) {
+    var self = this;
+    options = options || {};
+    self.callSuper('exists', key);
+    self.exists(self.bucket, key, options, callback);
   }
 });

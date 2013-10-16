@@ -1,10 +1,10 @@
 'use strict';
 
-var riakjs = require('riak-js')
+var riak = require('riak-js')
   , nconf = require('nconf').file({ file: 'config/settings.json'}).env()
   ;
 
-var db = riakjs.getClient({
+var db = riak.getClient({
   host: nconf.get('host')
 });
 
