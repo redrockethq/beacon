@@ -26,6 +26,6 @@
     "slug": "~0.4.0",
     "hat": "0.0.3",
     "moment": "~2.4.0",
-    "mongoose-paginate": "~0.1.5"
+    "crypto": "0.0.3"
   }
 }
